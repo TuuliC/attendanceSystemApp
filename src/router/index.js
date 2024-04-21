@@ -18,6 +18,7 @@ const routes = [
   // 主路由
   {
     path: '/',
+    redirect:'/home',//默认显示
     component: Main,
     children: [
       // 子路由

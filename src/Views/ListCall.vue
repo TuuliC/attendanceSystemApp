@@ -183,7 +183,7 @@
     ></el-pagination>
   </div>
 </template>
-  
+
   <script>
 import { getListCallPage } from "../api/studentApi";
 import { markAttendance } from "../api/callNameApi";
@@ -211,7 +211,7 @@ export default {
       stateList: [
         { id: "attended", name: "已签到" },
         { id: "absent", name: "缺勤" },
-        { id: "unattended", name: "未签到" },
+        // { id: "unattended", name: "未签到" },
       ],
       selectClassList: [], //已选择的筛选班级
       classArr: [], //提交给后端的
@@ -417,7 +417,7 @@ export default {
   },
 };
 </script>
-  
+
   <style scoped>
 .dashboard-container .container {
   background: #fff;
@@ -443,4 +443,3 @@ export default {
   margin-top: 30px;
 }
 </style>
-  

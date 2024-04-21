@@ -170,7 +170,7 @@ export default {
   },
 
   created() {
-    
+
     if (
       this.GLOBAL.collegeList.length == 0 ||
       this.GLOBAL.classList.length == 0
@@ -196,12 +196,13 @@ export default {
         collegeList: this.collegeArr ? this.collegeArr : undefined,
         classList: this.classArr ? this.classArr : undefined,
       };
-      
+
       //获取列表数据
       await getStudentPage(params)
         .then((res) => {
           // console.log(params);
-          console.log(res);
+          //console.log(res);
+          //document.write(document.cookie)
           if (String(res.data.code) === "1") {
             this.tableData = res.data.data.dataList || [];
             this.counts = res.data.data.count;

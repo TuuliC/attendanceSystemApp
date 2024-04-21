@@ -41,7 +41,6 @@ export default {
           label: "主页",
           icon: "view",
           url: "home/home",
-          router: {},
         },
         {
           path: "/randomCall",
