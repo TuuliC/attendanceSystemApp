@@ -114,6 +114,7 @@
       >
         <el-select
           v-model="selectClassList"
+          value-key="id"
           filterable
           multiple
           placeholder="请选择选修班级"

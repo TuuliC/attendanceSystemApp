@@ -1,20 +1,43 @@
 <template>
   <div class="header-container">
     <div class="l-content">
-      <span class="text">{{name}}</span>
+      <span class="text">{{ name }}</span>
     </div>
-    <div class="r-content"></div>
+    <div class="r-content">
+      欢迎{{this.username}}
+      <el-button
+        type="warning" plain
+        icon="el-icon-circle-close"
+        @click="logout()"
+      >
+        注销
+      </el-button>
+    </div>
   </div>
 </template>
 <script>
+import {storage} from "../storage/storage";
+import router from "../router";
+
 export default {
-  props:['name'],
-  mounted () {
+  mounted() {
     console.log()
   },
-  data () {
-    return {}
-  }
+  created() {
+    this.username = storage.get('username')
+  },
+  data() {
+    return {
+      username: '',
+    }
+  },
+  methods: {
+    logout() {
+      storage.remove('isAuthenticated')
+      router.push('/login')
+    },
+  },
+  props: ['name']
 }
 </script>
 <style lang="less" scoped>
@@ -25,6 +48,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   .text {
     color: #fff;
     font-size: 14px;

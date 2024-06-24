@@ -281,7 +281,7 @@ export default {
   margin: auto;
   width: 80%;
   text-align: center;
- 
+
   padding: 20px;
 }
 .show img {
@@ -292,4 +292,3 @@ export default {
   padding: 50px;
 }
 </style>
-  

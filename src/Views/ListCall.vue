@@ -7,7 +7,7 @@
           placeholder="搜索学号或姓名"
           style="width: 215px"
           clearable
-          @clear="initList()"
+          @clear="manualRefresh()"
           @keyup.enter.native="handleQueryList"
         >
         </el-input>
@@ -22,6 +22,36 @@
             @click="initList()"
           ></el-button>
         </span>
+
+        <el-button
+          type="success"
+          plain
+          icon="el-icon-refresh-left"
+          @click="manualRefresh()"
+        >
+          刷新
+        </el-button>
+
+        <el-button
+          v-if="!isAttendance"
+          type="primary"
+          plain
+          icon="el-icon-message-solid"
+          @click="startAttendance()"
+        >
+          发起签到
+        </el-button>
+
+        <el-button
+          v-else
+          type="warning"
+          plain
+          icon="el-icon-s-release"
+          @click="endAttendance()"
+        >
+          结束签到
+        </el-button>
+
       </div>
     </div>
     <div class="tableBar2">
@@ -140,7 +170,8 @@
       <el-table-column prop="className" label="班级"></el-table-column>
       <el-table-column prop="college" label="学院"></el-table-column>
       <el-table-column prop="status" label="状态"
-        ><template slot-scope="scope">
+      >
+        <template slot-scope="scope">
           <el-tag v-if="scope.row.status === 'attended'" type="success">
             已签到
           </el-tag>
@@ -148,7 +179,8 @@
             缺勤
           </el-tag>
           <el-tag v-else>未签到</el-tag>
-        </template></el-table-column
+        </template>
+      </el-table-column
       >
       <el-table-column label="操作" width="100%" align="center">
         <template slot-scope="scope">
@@ -184,9 +216,9 @@
   </div>
 </template>
 
-  <script>
-import { getListCallPage } from "../api/studentApi";
-import { markAttendance } from "../api/callNameApi";
+<script>
+import {getListCallPage} from "../api/studentApi";
+import {markAttendance, startAttendance, endAttendance} from "../api/callNameApi";
 import {
   getSelectCollege,
   getSelectClass,
@@ -203,14 +235,15 @@ export default {
       checkList: [],
       gender: "",
       genderList: [
-        { value: "男", label: "男" },
-        { value: "女", label: "女" },
+        {value: "男", label: "男"},
+        {value: "女", label: "女"},
       ],
       selectStateList: [],
       stateArr: [],
       stateList: [
-        { id: "attended", name: "已签到" },
-        { id: "absent", name: "缺勤" },
+        {id: "attended", name: "已签到"},
+        {id: "absent", name: "缺勤"},
+        {id: "no", name: "未签到"},
         // { id: "unattended", name: "未签到" },
       ],
       selectClassList: [], //已选择的筛选班级
@@ -232,6 +265,8 @@ export default {
           status: "",
         },
       ],
+      isAttendance: false,
+      isManualRefresh: false, // 区分手动刷新和自动刷新的标志
     };
   },
 
@@ -239,7 +274,7 @@ export default {
     if (
       this.GLOBAL.collegeList.length == 0 ||
       this.GLOBAL.classList.length == 0 ||
-      this.GLOBAL.courseId==''
+      this.GLOBAL.courseId == ''
     )
       this.initList();
     else {
@@ -252,6 +287,18 @@ export default {
       this.selectClassList = this.GLOBAL.classList;
       this.changeClass();
       this.courseId = this.GLOBAL.courseId;
+    }
+    // 启动定时器，每5秒刷新一次
+    this.intervalId = setInterval(() => {
+      this.isManualRefresh = false;
+      this.initList();
+    }, 5000);
+  },
+
+  beforeDestroy() {
+    // 在组件销毁之前清除定时器
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
     }
   },
 
@@ -288,7 +335,11 @@ export default {
         this.courseId == ""
       ) {
         this.$message.warning("请填写学院 班级 课程");
-        this.tableData=[]
+        this.tableData = []
+        return;
+      }
+      if (!this.isAttendance) {
+        this.tableData = null;
         return;
       }
       //获取列表数据
@@ -304,8 +355,18 @@ export default {
         .catch((err) => {
           this.$message.error("请求出错了：" + err);
         });
+      if (this.isManualRefresh) {
+        this.$notify({
+          title: "刷新成功",
+          message: "已刷新信息",
+          type: "success",
+        });
+      }
     },
-
+    manualRefresh() {
+      this.isManualRefresh = true;
+      this.initList();
+    },
     //选择学院后，获取“筛选班级“下拉框数据
     changeCollege(id) {
       this.GLOBAL.collegeList = this.selectCollegeList;
@@ -361,6 +422,37 @@ export default {
       //console.log(this.stateArr);
     },
 
+    startAttendance() {
+      let obj = {courseId: this.courseId, classsId: this.selectClassList[0]};
+      console.log(obj);
+      startAttendance(obj)
+        .then((res) => {
+          if (String(res.data.code) === "1") {
+            // 更新表格中学生的点名状态
+            this.initList();
+            this.$message.success("发起点名成功");
+            this.isAttendance = true;
+          } else {
+            this.$message.error(res.data.msg || "操作失败");
+          }
+        })
+    },
+
+    endAttendance() {
+      let obj = {courseId: this.courseId, classsId: this.selectClassList[0]};
+      endAttendance(obj)
+        .then((res) => {
+          if (String(res.data.code) === "1") {
+            // 更新表格中学生的点名状态
+            this.initList();
+            this.$message.success("已结束点名");
+            this.isAttendance = false;
+          } else {
+            this.$message.error(res.data.msg || "操作失败");
+          }
+        })
+    },
+
     markAttendance(pattern, status, id) {
       let checkArr = [];
       if (pattern === "batch") {
@@ -370,7 +462,7 @@ export default {
         // 单个点名操作
         checkArr.push(id);
       }
-      let obj = { ids: checkArr, courseId: this.courseId, status: status };
+      let obj = {ids: checkArr, courseId: this.courseId, status: status};
       //console.log(obj);
       markAttendance(obj)
         .then((res) => {
@@ -418,7 +510,7 @@ export default {
 };
 </script>
 
-  <style scoped>
+<style scoped>
 .dashboard-container .container {
   background: #fff;
   position: relative;
@@ -426,11 +518,13 @@ export default {
   padding: 30px 28px;
   border-radius: 4px;
 }
+
 .tableBar {
   display: flex;
   margin-bottom: 20px;
   justify-content: space-between;
 }
+
 .tableBar2 {
   display: flex;
   margin-bottom: 20px;

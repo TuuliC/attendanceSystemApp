@@ -26,15 +26,19 @@
     </el-col>
   </el-row>
 </template>
+
 <el-main>
-      <router-view></router-view>
+<router-view></router-view>
 </el-main>
 
 <script>
+import { storage } from "../storage/storage";
+
 export default {
   data() {
     return {
-      menuData: [
+      menuData: [],
+      adminMenu: [
         {
           path: "/home",
           name: "home",
@@ -91,10 +95,45 @@ export default {
           icon: "reading",
           url: "Record/record",
         },
+        // {
+        //   path: "/user",
+        //   name: "user",
+        //   label: "用户中心",
+        //   icon: "reading",
+        //   url: "user/user",
+        // },
+      ],
+      studentMenu: [
+        {
+          path: "/attendance",
+          name: "attendance",
+          label: "签到",
+          icon: "view",
+          url: "attendance/attendance",
+        },
+
+        {
+          path: "/studentRecord",
+          name: "studentRecord",
+          label: "签到记录",
+          icon: "view",
+          url: "studentRecord/studentRecord",
+        },
       ],
     };
   },
+  created() {
+    this.setMenuData();
+  },
   methods: {
+    setMenuData() {
+      const role = storage.get('role');
+      if (role === '1') {
+        this.menuData = this.adminMenu;
+      } else if (role === '2') {
+        this.menuData = this.studentMenu;
+      }
+    },
     handleOpen(key, keyPath) {
       //console.log(key, keyPath)
     },

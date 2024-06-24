@@ -10,7 +10,7 @@ export function getCoursePage(obj) {
 
 export function queryCoueseById(id) {
     return request({
-        url: '/course/queryCoueseById/' + id,
+        url: '/course/queryCourseById/' + id,
         method: 'get',
     })
 }
