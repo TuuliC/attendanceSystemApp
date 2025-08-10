@@ -243,7 +243,7 @@ export default {
       stateList: [
         {id: "attended", name: "已签到"},
         {id: "absent", name: "缺勤"},
-        {id: "no", name: "未签到"},
+        // {id: "no", name: "未签到"},
         // { id: "unattended", name: "未签到" },
       ],
       selectClassList: [], //已选择的筛选班级
@@ -338,10 +338,10 @@ export default {
         this.tableData = []
         return;
       }
-      if (!this.isAttendance) {
-        this.tableData = null;
-        return;
-      }
+      // if (!this.isAttendance) {
+      //   this.tableData = null;
+      //   return;
+      // }
       //获取列表数据
       await getListCallPage(params)
         .then((res) => {
